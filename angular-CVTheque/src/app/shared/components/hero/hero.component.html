@@ -1,0 +1,35 @@
+<div class="container mx-auto mt-6 md:px-0 px-2">
+    <div class="overflow-hidden shadow relative rounded-lg info w-full bg-gray-800 p-6 flex md:flex-row flex-col justify-between">
+        <div class="flex items-center absolute z-40 bottom-0 right-0 h-10 w-full bg-white">
+            <a routerLink="/" class="md:ml-28 ml-6 text-xs font-bold text-gray-500">Home</a>
+           <a routerLink="/web" class="ml-10 text-xs font-bold text-gray-500">Account</a>
+        </div>
+        <div class="flex">
+            <div>
+                <img class="relative z-50 w-36 h-36 rounded-full border-8 border-white" [src]="currentUser.image">
+            </div>
+            <div class="text-white pl-4 py-2 font-medium flex flex-col">
+                <h3>{{currentUser.firstName}} {{currentUser.lastName}}</h3>
+                <h3>@{{currentUser.email.substring(1, currentUser.email.indexOf("@"))}}</h3>
+                <button class="w-36 px-2 py-1 mt-2 rounded-lg bg-yellow-400 text-white">Edit Profile</button>
+            </div>
+        </div>
+        <div class="w-full md:w-1/2 text-white flex item-center justify-between md:mt-0 mt-2">
+            <div class="m-auto">
+                <h3 class="font-bold text-xl">Level</h3>
+                <span>{{currentUser.promotions[0].level}}</span>
+            </div>
+            <div class="m-auto">
+                <h3 class="font-bold text-xl">Classroom</h3>
+                <span>{{currentUser.promotions[0].name}}</span>
+            </div>
+            <div class="m-auto">
+                <h3 class="font-bold text-xl">Promotion</h3>
+                <span>{{currentUser.promotions[0].year}}</span>
+            </div>
+        </div>
+        <div class="">
+            <img class="mx-auto md:mr-6 w-52 h-36 rounded-lg text-white pb-4" src="/assets/images/UMv83.gif">
+        </div>
+    </div>
+</div> 
