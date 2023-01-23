@@ -2,6 +2,7 @@ package com.example.cvtheque.document;
 
 import com.example.cvtheque.learner.LearnerEntity;
 import com.example.cvtheque.notification.NotificationEntity;
+import com.example.cvtheque.users.UserEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -32,6 +33,8 @@ public class DocumentEntity {
     private String data_file;
     @ManyToOne
     private LearnerEntity learner;
+    @ManyToOne
+    private UserEntity user;
     @OneToMany
     private List<NotificationEntity> notification;
 

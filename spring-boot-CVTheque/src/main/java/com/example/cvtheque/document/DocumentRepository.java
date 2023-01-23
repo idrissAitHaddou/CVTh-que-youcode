@@ -6,6 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface DocumentRepository extends JpaRepository<DocumentEntity, Long> {
-    @Query("SELECT d FROM DocumentEntity d where d.learner.id = :idLerner")
-    List<DocumentEntity> findByLearnerId(Long idLerner);
+    @Query("SELECT d FROM DocumentEntity d where d.user.id = :idLerner")
+    List<DocumentEntity> findByUserId(Long idLerner);
 }

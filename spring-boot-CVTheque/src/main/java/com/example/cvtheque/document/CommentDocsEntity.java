@@ -2,6 +2,7 @@ package com.example.cvtheque.document;
 
 import com.example.cvtheque.cme.CmeEntity;
 import com.example.cvtheque.learner.LearnerEntity;
+import com.example.cvtheque.users.UserEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,12 +21,16 @@ public class CommentDocsEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
-    private int id_document;
+    @Column(name = "id_document")
+    private int idDocument;
     private String comment;
+    private String created_at;
     @OneToMany(fetch = FetchType.EAGER)
     private List<CommentLikesEntity> commentLikes = new ArrayList<>();
     @OneToOne
     private LearnerEntity learner;
     @OneToOne
     private CmeEntity cme;
+    @OneToOne
+    private UserEntity user;
 }

@@ -12,12 +12,12 @@ export class DocumentService {
 
   constructor(private http: HttpClient, private authService: AuthService) { }
 
-  createComment(comment: string): Observable<string> {
-    return this.http.post<string>(environment.baseApi + "document/topic/comment/create", comment)
+  createComment(comment: FormData): Observable<any> {
+    return this.http.post<any>(environment.baseApi + "document/comment/create", comment)
   }
 
-  getAllComment(): Observable<any> {
-    return this.http.get<any>(environment.baseApi + "document/comment/get")
+  getAllComment(id: number): Observable<any> {
+    return this.http.get<any>(environment.baseApi + `document/comment/get?id=${id}`)
   }
 
   addDocument(document: FormData):Observable<any> {
@@ -28,8 +28,12 @@ export class DocumentService {
       })
   }
 
-  getAllDocuemnts(idUser: number):Observable<Document[]> {
+  getAllDocuemntsByLearner(idUser: number):Observable<Document[]> {
     return this.http.get<Document[]>(environment.baseApi + "document/learner?idUser=" + idUser)
+  }
+
+  getAllDocuemnts():Observable<Document[]> {
+    return this.http.get<Document[]>(environment.baseApi + "document/get")
   }
 
   deleteDocument(id: number): Observable<boolean> {

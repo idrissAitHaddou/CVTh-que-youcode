@@ -4,6 +4,7 @@ import com.example.cvtheque.learner.LearnerDto;
 import com.example.cvtheque.learner.LearnerService;
 import com.example.cvtheque.security.config.JwtUtil;
 import com.example.cvtheque.users.UserDto;
+import com.example.cvtheque.users.UserEntity;
 import com.example.cvtheque.users.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +21,7 @@ public class AuthenticationService {
     @Autowired
     private UserService userService;
     @Autowired
-    private LearnerService learnerService;
+    private UserDto userDto;
     @Autowired
     private JwtUtil jwtUtil;
     @Autowired
@@ -34,9 +35,9 @@ public class AuthenticationService {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(userDto.getEmail(), userDto.getPassword())
             );
-            LearnerDto learner = learnerService.loadUserByEmail(userDto.getEmail());
+            UserDto userInfo = userDto.UserEntityToDto(userService.loadUserByEmail(userDto.getEmail())) ;
             responseToken.put("accessToken", jwtUtil.generateToken(user));
-            responseToken.put("user", learner);
+            responseToken.put("user", userInfo);
             return ResponseEntity.ok(responseToken);
         }
         responseToken.put("accessToken", null);

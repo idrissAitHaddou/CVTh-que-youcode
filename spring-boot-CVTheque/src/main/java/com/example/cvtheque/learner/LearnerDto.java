@@ -2,6 +2,7 @@ package com.example.cvtheque.learner;
 
 import com.example.cvtheque.document.DocumentEntity;
 import com.example.cvtheque.promotion.PromotionEntity;
+import com.example.cvtheque.users.UserDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -64,4 +65,11 @@ public class LearnerDto {
         });
         return learnerDtoList;
     }
+
+    public LearnerEntity LearnerDtoToEntity(UserDto userDto){
+        LearnerEntity learnerEntity = new LearnerEntity();
+        learnerEntity.setId(userDto.getId());
+        return learnerEntity;
+    }
+
 }

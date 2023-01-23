@@ -1,32 +1,38 @@
 package com.example.cvtheque.document;
 
+import jakarta.servlet.annotation.MultipartConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/v1/api/document")
+@MultipartConfig
 public class DucomentController {
     @Autowired
     private DocumentService documentService;
-    @Autowired
-    private CommentDocRepository commentDocRepository;
 
     @PostMapping(value = "/add")
-    public ResponseEntity<DocumentDto> addDocument(@RequestPart(value = "document") DocumentDto documentDto, @RequestPart("idUser") int idUser) {
-        return documentService.addDocument(documentDto, idUser);
+    public ResponseEntity<DocumentDto> addDocument(@RequestPart(value = "document") DocumentDto documentDto, @RequestPart("file") MultipartFile file, @RequestPart("idUser") int idUser) {
+        return documentService.addDocument(documentDto, file, idUser);
     }
 
     @GetMapping("/learner")
     public List<DocumentDto> getLearnerDocuments(@RequestParam("idUser") int idUser) {
-        return documentService.getLearnerDocuments(idUser);
+        return documentService.getUserDocuments(idUser);
     }
 
     @GetMapping("/delete")
     public ResponseEntity<Boolean> deleteDocuments(@RequestParam("id") int id) {
         return ResponseEntity.ok(documentService.deleteDocument(id));
+    }
+
+    @GetMapping("/get")
+    public ResponseEntity<List<DocumentDto>> getDocuments() {
+        return ResponseEntity.ok(documentService.getDocuments());
     }
 
     @GetMapping("/one")
@@ -35,19 +41,18 @@ public class DucomentController {
     }
 
     @PostMapping("/update")
-    public ResponseEntity<DocumentDto> updateDocument(@RequestPart(value = "document") DocumentDto documentDto, @RequestPart("id") int id) {
-        return documentService.updateDocument(documentDto, id);
+    public ResponseEntity<DocumentDto> updateDocument(@RequestPart(value = "document") DocumentDto documentDto, @RequestPart(value = "file", required = false) MultipartFile file, @RequestPart("id") int id) {
+        return documentService.updateDocument(documentDto, file, id);
     }
 
     @PostMapping("/comment/create")
-    public ResponseEntity<?> createComment(@RequestBody String comment) {
-        CommentDocsEntity com = new CommentDocsEntity();
-        com.setComment(comment);
-        return ResponseEntity.ok(commentDocRepository.save(com));
+    public ResponseEntity<CommentDocDto> createComment(@RequestPart(value = "comment") String comment, @RequestPart("idDoc") int idDoc, @RequestPart("idUser") int idUser) {
+           comment = comment.substring(1, comment.length() - 1);
+            return documentService.saveComment(comment, idDoc, idUser);
     }
 
-    @PostMapping("/comment/get")
-    public ResponseEntity<?> getDocumentComments(@RequestParam("id") int id) {
+    @GetMapping("/comment/get")
+    public ResponseEntity<List<CommentDocDto>> getDocumentComments(@RequestParam("id") int id) {
         return ResponseEntity.ok(documentService.findDocumentCommentsById(id));
     }
 

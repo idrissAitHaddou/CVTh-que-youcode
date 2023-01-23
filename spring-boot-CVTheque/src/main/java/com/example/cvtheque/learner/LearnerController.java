@@ -1,5 +1,7 @@
 package com.example.cvtheque.learner;
 
+import com.example.cvtheque.users.UserDto;
+import com.example.cvtheque.users.UserEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,8 +15,8 @@ public class LearnerController {
     private LearnerService learnerService;
 
     @PostMapping("/add")
-    public ResponseEntity<String> addLearner(@RequestBody LearnerDto learner, @RequestParam String promoName) {
-        return learnerService.addLearnerService(learner, promoName);
+    public ResponseEntity<UserEntity> addLearner(@RequestBody UserDto user, @RequestParam String promoName) {
+        return learnerService.addUserService(user, promoName);
     }
 
     @GetMapping("/get/all")

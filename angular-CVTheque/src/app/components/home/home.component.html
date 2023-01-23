@@ -21,7 +21,7 @@
             <!-- start table -->
             <div class="h-auto w-3/5 bg-white overflow-x-auto relative shadow-md sm:rounded-lg  p-4">
                 <div class="flex justify-end">
-                    <button type="button" data-modal-toggle="add-modal" class="mb-4 focus:outline-none text-white bg-purple-700 hover:bg-purple-800 focus:ring-4 focus:ring-purple-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-purple-600 dark:hover:bg-purple-700 dark:focus:ring-purple-900">
+                    <button *ngIf="currentRole=='learner'" type="button" data-modal-toggle="add-modal" class="mb-4 focus:outline-none text-white bg-purple-700 hover:bg-purple-800 focus:ring-4 focus:ring-purple-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-purple-600 dark:hover:bg-purple-700 dark:focus:ring-purple-900">
                         <i class="pi pi-plus mr-1" style="font-size: 14px"></i>
                         <span class="font-bold">Ajouter</span>
                     </button>
@@ -52,7 +52,7 @@
                                 {{document.name}}
                             </th>
                             <td class="py-4 px-6">
-                                {{document.type}}
+                                {{document.type.substring(document.type.indexOf("/")+1)}}
                             </td>
                             <td class="py-4">
                                 {{document.category}}
@@ -61,50 +61,78 @@
                                 {{document.createdAt}}
                             </td>
                             <td class="flex justify-around py-4 px-6 text-right">
-                                <button type="button" data-modal-toggle="show-modal"> <i class="pi pi-eye mr-2 cursor-pointer" style="font-size: 1rem"></i> </button>
-                                <button (click) = "idDocument = document.id" type="button" data-modal-toggle="delete-modal"> <i class="pi pi-trash mr-2 cursor-pointer" style="font-size: 1rem"></i> </button>
-                                <button (click) = "getOneDocument(document.id)" type="button" data-modal-toggle="update-modal"> <i class="pi pi-check-square mr-2 cursor-pointer" style="font-size: 1rem"></i> </button>
-                                <button type="button"> <a [href]="document.data_file"><i class="pi pi-cloud-download cursor-pointer mr-2" style="font-size: 1rem"></i> </a></button>
-                                <i class="pi pi-comments cursor-pointer" style="font-size: 1rem"></i>
+                                <button (click) = "showFileDetails(document.src)" type="button" data-modal-toggle="show-modal"> <i class="pi pi-eye mr-2 cursor-pointer" style="font-size: 1rem"></i> </button>
+                                <button *ngIf="currentRole=='learner'" (click) = "idDocument = document.id" type="button" data-modal-toggle="delete-modal"> <i class="pi pi-trash mr-2 cursor-pointer" style="font-size: 1rem"></i> </button>
+                                <button *ngIf="currentRole=='learner'" (click) = "getOneDocument(document.id)" type="button" data-modal-toggle="update-modal"> <i class="pi pi-check-square mr-2 cursor-pointer" style="font-size: 1rem"></i> </button>
+                                <!-- <button type="button"> <a href=""><i class="pi pi-cloud-download cursor-pointer mr-2" style="font-size: 1rem"></i> </a></button> -->
+                                <button *ngIf="currentRole=='learner' || currentRole=='cme'" (click) = "dtoogleCommentDoc = !dtoogleCommentDoc; idDoc = document.id;getAllComment(document.id)"><i class="pi pi-comments cursor-pointer" style="font-size: 1rem"></i></button>
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
              <!-- end table -->
-             <div class="flex flex-col justify-between bg-white rounded-lg w-2/6 h-96 overflow-y-scroll">
-                <!-- start display messages-->
-                    <div>
-                        <div class="flex items-center justify-center">
-                            <div class="text-black dark:text-gray-200 p-4 antialiased flex max-w-lg">
-                              <img class="rounded-full h-8 w-8 mr-2 mt-1 " src="https://picsum.photos/id/1027/200/200"/>
-                              <div>
-                                <div class="bg-gray-100 dark:bg-gray-700 rounded-3xl px-4 pt-2 pb-2.5">
-                                  <div class="font-semibold text-sm leading-relaxed">Jon Doe</div>
-                                  <div class="text-normal leading-snug md:leading-normal"
-                                  > veniam, quis nostrud exercitation nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</div>
+             <div *ngIf="dtoogleCommentDoc" class="relative w-2/6">
+                            <button (click) = "getAllComment(idDoc)" class="absolute z-50 top-2 right-4 px-2 py-1 bg-blue-600 rounded-full"><i class="pi pi-refresh text-white"></i></button>
+                            <div class="flex flex-col justify-between bg-white rounded-lg w-full h-96 overflow-y-scroll">
+                                <!-- start display messages-->
+                                <div>
+                                        <div *ngFor="let comment of comments">
+                                            <!-- current user comment -->
+                                            <div *ngIf="currentRole == comment.user.role" class="relative flex items-center justify-end">
+                                                <div class="text-black dark:text-gray-200 p-4 antialiased flex max-w-lg">
+                                                <img class="rounded-full h-8 w-8 mr-2 mt-1 " [src]="comment.user.image"/>
+                                                <div>
+                                                    <div class="bg-gray-100 dark:bg-gray-700 rounded-3xl px-4 pt-2 pb-2.5">
+                                                    <div class="font-semibold text-sm leading-relaxed">You</div>
+                                                    <div class="text-normal leading-snug md:leading-normal"> 
+                                                        {{comment.comment}}
+                                                    </div>
+                                                    </div>
+                                                    <div class="absolute right-0 bottom-8 bg-gray-700 border border-gray-700 rounded-full float-right flex shadow items-center ">
+                                                        <svg class="p-0.5 h-5 w-5 rounded-full z-20 bg-white dark:bg-gray-700" xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' viewBox='0 0 16 16'><defs><linearGradient id='a1' x1='50%' x2='50%' y1='0%' y2='100%'><stop offset='0%' stop-color='#18AFFF'/><stop offset='100%' stop-color='#0062DF'/></linearGradient><filter id='c1' width='118.8%' height='118.8%' x='-9.4%' y='-9.4%' filterUnits='objectBoundingBox'><feGaussianBlur in='SourceAlpha' result='shadowBlurInner1' stdDeviation='1'/><feOffset dy='-1' in='shadowBlurInner1' result='shadowOffsetInner1'/><feComposite in='shadowOffsetInner1' in2='SourceAlpha' k2='-1' k3='1' operator='arithmetic' result='shadowInnerInner1'/><feColorMatrix in='shadowInnerInner1' values='0 0 0 0 0 0 0 0 0 0.299356041 0 0 0 0 0.681187726 0 0 0 0.3495684 0'/></filter><path id='b1' d='M8 0a8 8 0 00-8 8 8 8 0 1016 0 8 8 0 00-8-8z'/></defs><g fill='none'><use fill='url(#a1)' xlink:href='#b1'/><use fill='black' filter='url(#c1)' xlink:href='#b1'/><path fill='white' d='M12.162 7.338c.176.123.338.245.338.674 0 .43-.229.604-.474.725a.73.73 0 01.089.546c-.077.344-.392.611-.672.69.121.194.159.385.015.62-.185.295-.346.407-1.058.407H7.5c-.988 0-1.5-.546-1.5-1V7.665c0-1.23 1.467-2.275 1.467-3.13L7.361 3.47c-.005-.065.008-.224.058-.27.08-.079.301-.2.635-.2.218 0 .363.041.534.123.581.277.732.978.732 1.542 0 .271-.414 1.083-.47 1.364 0 0 .867-.192 1.879-.199 1.061-.006 1.749.19 1.749.842 0 .261-.219.523-.316.666zM3.6 7h.8a.6.6 0 01.6.6v3.8a.6.6 0 01-.6.6h-.8a.6.6 0 01-.6-.6V7.6a.6.6 0 01.6-.6z'/></g></svg>
+                                                        <svg class="p-0.5 h-5 w-5 rounded-full -ml-1.5 bg-white dark:bg-gray-700" xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' viewBox='0 0 16 16'><defs><linearGradient id='a2' x1='50%' x2='50%' y1='0%' y2='100%'><stop offset='0%' stop-color='#FF6680'/><stop offset='100%' stop-color='#E61739'/></linearGradient><filter id='c2' width='118.8%' height='118.8%' x='-9.4%' y='-9.4%' filterUnits='objectBoundingBox'><feGaussianBlur in='SourceAlpha' result='shadowBlurInner1' stdDeviation='1'/><feOffset dy='-1' in='shadowBlurInner1' result='shadowOffsetInner1'/><feComposite in='shadowOffsetInner1' in2='SourceAlpha' k2='-1' k3='1' operator='arithmetic' result='shadowInnerInner1'/><feColorMatrix in='shadowInnerInner1' values='0 0 0 0 0.710144928 0 0 0 0 0 0 0 0 0 0.117780134 0 0 0 0.349786932 0'/></filter><path id='b2' d='M8 0a8 8 0 100 16A8 8 0 008 0z'/></defs><g fill='none'><use fill='url(#a2)' xlink:href='#b2'/><use fill='black' filter='url(#c2)' xlink:href='#b2'/><path fill='white' d='M10.473 4C8.275 4 8 5.824 8 5.824S7.726 4 5.528 4c-2.114 0-2.73 2.222-2.472 3.41C3.736 10.55 8 12.75 8 12.75s4.265-2.2 4.945-5.34c.257-1.188-.36-3.41-2.472-3.41'/></g></svg>
+                                                        <span class="text-sm ml-1 pr-1.5 text-gray-500 dark:text-gray-300">3</span>
+                                                    </div>
+                                                    <div class="felx justify-start mt-4 text-xs text-gray-500 dark:text-gray-400">{{comment.created_at}}</div>
+                                                </div>
+                                                </div>
+                                            </div>
+                                            <!--  to comment -->
+                                            <div *ngIf="currentRole != comment.user.role" class="flex items-center justify-start">
+                                                <div class="text-black dark:text-gray-200 p-4 antialiased flex max-w-lg">
+                                                <img class="rounded-full h-8 w-8 mr-2 mt-1 " [src]="comment.user.image"/>
+                                                <div>
+                                                    <div class="bg-gray-100 dark:bg-gray-700 rounded-3xl px-4 pt-2 pb-2.5">
+                                                    <div class="font-semibold text-sm leading-relaxed">{{comment.user.firstName}} {{comment.user.lastName}}</div>
+                                                    <div class="text-normal leading-snug md:leading-normal"> 
+                                                        {{comment.comment}}
+                                                    </div>
+                                                    </div>
+                                                    <div class="text-sm -ml-6 mt-1 text-gray-500 dark:text-gray-400">{{comment.created_at}}</div>
+                                                    <div class="bg-white dark:bg-gray-700 border border-white dark:border-gray-700 rounded-full float-right -mt-8 mr-0.5 flex shadow items-center ">
+                                                    <svg class="p-0.5 h-5 w-5 rounded-full z-20 bg-white dark:bg-gray-700" xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' viewBox='0 0 16 16'><defs><linearGradient id='a1' x1='50%' x2='50%' y1='0%' y2='100%'><stop offset='0%' stop-color='#18AFFF'/><stop offset='100%' stop-color='#0062DF'/></linearGradient><filter id='c1' width='118.8%' height='118.8%' x='-9.4%' y='-9.4%' filterUnits='objectBoundingBox'><feGaussianBlur in='SourceAlpha' result='shadowBlurInner1' stdDeviation='1'/><feOffset dy='-1' in='shadowBlurInner1' result='shadowOffsetInner1'/><feComposite in='shadowOffsetInner1' in2='SourceAlpha' k2='-1' k3='1' operator='arithmetic' result='shadowInnerInner1'/><feColorMatrix in='shadowInnerInner1' values='0 0 0 0 0 0 0 0 0 0.299356041 0 0 0 0 0.681187726 0 0 0 0.3495684 0'/></filter><path id='b1' d='M8 0a8 8 0 00-8 8 8 8 0 1016 0 8 8 0 00-8-8z'/></defs><g fill='none'><use fill='url(#a1)' xlink:href='#b1'/><use fill='black' filter='url(#c1)' xlink:href='#b1'/><path fill='white' d='M12.162 7.338c.176.123.338.245.338.674 0 .43-.229.604-.474.725a.73.73 0 01.089.546c-.077.344-.392.611-.672.69.121.194.159.385.015.62-.185.295-.346.407-1.058.407H7.5c-.988 0-1.5-.546-1.5-1V7.665c0-1.23 1.467-2.275 1.467-3.13L7.361 3.47c-.005-.065.008-.224.058-.27.08-.079.301-.2.635-.2.218 0 .363.041.534.123.581.277.732.978.732 1.542 0 .271-.414 1.083-.47 1.364 0 0 .867-.192 1.879-.199 1.061-.006 1.749.19 1.749.842 0 .261-.219.523-.316.666zM3.6 7h.8a.6.6 0 01.6.6v3.8a.6.6 0 01-.6.6h-.8a.6.6 0 01-.6-.6V7.6a.6.6 0 01.6-.6z'/></g></svg>
+                                                    <svg class="p-0.5 h-5 w-5 rounded-full -ml-1.5 bg-white dark:bg-gray-700" xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' viewBox='0 0 16 16'><defs><linearGradient id='a2' x1='50%' x2='50%' y1='0%' y2='100%'><stop offset='0%' stop-color='#FF6680'/><stop offset='100%' stop-color='#E61739'/></linearGradient><filter id='c2' width='118.8%' height='118.8%' x='-9.4%' y='-9.4%' filterUnits='objectBoundingBox'><feGaussianBlur in='SourceAlpha' result='shadowBlurInner1' stdDeviation='1'/><feOffset dy='-1' in='shadowBlurInner1' result='shadowOffsetInner1'/><feComposite in='shadowOffsetInner1' in2='SourceAlpha' k2='-1' k3='1' operator='arithmetic' result='shadowInnerInner1'/><feColorMatrix in='shadowInnerInner1' values='0 0 0 0 0.710144928 0 0 0 0 0 0 0 0 0 0.117780134 0 0 0 0.349786932 0'/></filter><path id='b2' d='M8 0a8 8 0 100 16A8 8 0 008 0z'/></defs><g fill='none'><use fill='url(#a2)' xlink:href='#b2'/><use fill='black' filter='url(#c2)' xlink:href='#b2'/><path fill='white' d='M10.473 4C8.275 4 8 5.824 8 5.824S7.726 4 5.528 4c-2.114 0-2.73 2.222-2.472 3.41C3.736 10.55 8 12.75 8 12.75s4.265-2.2 4.945-5.34c.257-1.188-.36-3.41-2.472-3.41'/></g></svg>
+                                                    <span class="text-sm ml-1 pr-1.5 text-gray-500 dark:text-gray-300">3</span>
+                                                    </div>
+                                                </div>
+                                                </div>
+                                            </div>
+                                            <!--  to comment -->
+                                    </div>
                                 </div>
-                                <div class="text-sm ml-4 mt-0.5 text-gray-500 dark:text-gray-400">14 w</div>
-                                <div class="bg-white dark:bg-gray-700 border border-white dark:border-gray-700 rounded-full float-right -mt-8 mr-0.5 flex shadow items-center ">
-                                  <svg class="p-0.5 h-5 w-5 rounded-full z-20 bg-white dark:bg-gray-700" xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' viewBox='0 0 16 16'><defs><linearGradient id='a1' x1='50%' x2='50%' y1='0%' y2='100%'><stop offset='0%' stop-color='#18AFFF'/><stop offset='100%' stop-color='#0062DF'/></linearGradient><filter id='c1' width='118.8%' height='118.8%' x='-9.4%' y='-9.4%' filterUnits='objectBoundingBox'><feGaussianBlur in='SourceAlpha' result='shadowBlurInner1' stdDeviation='1'/><feOffset dy='-1' in='shadowBlurInner1' result='shadowOffsetInner1'/><feComposite in='shadowOffsetInner1' in2='SourceAlpha' k2='-1' k3='1' operator='arithmetic' result='shadowInnerInner1'/><feColorMatrix in='shadowInnerInner1' values='0 0 0 0 0 0 0 0 0 0.299356041 0 0 0 0 0.681187726 0 0 0 0.3495684 0'/></filter><path id='b1' d='M8 0a8 8 0 00-8 8 8 8 0 1016 0 8 8 0 00-8-8z'/></defs><g fill='none'><use fill='url(#a1)' xlink:href='#b1'/><use fill='black' filter='url(#c1)' xlink:href='#b1'/><path fill='white' d='M12.162 7.338c.176.123.338.245.338.674 0 .43-.229.604-.474.725a.73.73 0 01.089.546c-.077.344-.392.611-.672.69.121.194.159.385.015.62-.185.295-.346.407-1.058.407H7.5c-.988 0-1.5-.546-1.5-1V7.665c0-1.23 1.467-2.275 1.467-3.13L7.361 3.47c-.005-.065.008-.224.058-.27.08-.079.301-.2.635-.2.218 0 .363.041.534.123.581.277.732.978.732 1.542 0 .271-.414 1.083-.47 1.364 0 0 .867-.192 1.879-.199 1.061-.006 1.749.19 1.749.842 0 .261-.219.523-.316.666zM3.6 7h.8a.6.6 0 01.6.6v3.8a.6.6 0 01-.6.6h-.8a.6.6 0 01-.6-.6V7.6a.6.6 0 01.6-.6z'/></g></svg>
-                                  <svg class="p-0.5 h-5 w-5 rounded-full -ml-1.5 bg-white dark:bg-gray-700" xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' viewBox='0 0 16 16'><defs><linearGradient id='a2' x1='50%' x2='50%' y1='0%' y2='100%'><stop offset='0%' stop-color='#FF6680'/><stop offset='100%' stop-color='#E61739'/></linearGradient><filter id='c2' width='118.8%' height='118.8%' x='-9.4%' y='-9.4%' filterUnits='objectBoundingBox'><feGaussianBlur in='SourceAlpha' result='shadowBlurInner1' stdDeviation='1'/><feOffset dy='-1' in='shadowBlurInner1' result='shadowOffsetInner1'/><feComposite in='shadowOffsetInner1' in2='SourceAlpha' k2='-1' k3='1' operator='arithmetic' result='shadowInnerInner1'/><feColorMatrix in='shadowInnerInner1' values='0 0 0 0 0.710144928 0 0 0 0 0 0 0 0 0 0.117780134 0 0 0 0.349786932 0'/></filter><path id='b2' d='M8 0a8 8 0 100 16A8 8 0 008 0z'/></defs><g fill='none'><use fill='url(#a2)' xlink:href='#b2'/><use fill='black' filter='url(#c2)' xlink:href='#b2'/><path fill='white' d='M10.473 4C8.275 4 8 5.824 8 5.824S7.726 4 5.528 4c-2.114 0-2.73 2.222-2.472 3.41C3.736 10.55 8 12.75 8 12.75s4.265-2.2 4.945-5.34c.257-1.188-.36-3.41-2.472-3.41'/></g></svg>
-                                  <span class="text-sm ml-1 pr-1.5 text-gray-500 dark:text-gray-300">3</span>
+                            <!-- end display messages -->
+                            <form class="w-full">
+                                <label for="chat" class="sr-only">Your message</label>
+                                <div class="flex items-center px-3 py-2 rounded-lg bg-gray-50">
+                                    <textarea [(ngModel)]="comment" name="comment" id="chat" rows="1" class="block mx-4 p-2.5 w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500" placeholder="Your message..."></textarea>
+                                    <button (click) = "sendComment()" type="submit" class="inline-flex justify-center p-2 text-blue-600 rounded-full cursor-pointer hover:bg-blue-100">
+                                        <svg aria-hidden="true" class="w-6 h-6 rotate-90" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"></path></svg>
+                                        <span class="sr-only">Send message</span>
+                                    </button>
                                 </div>
-                              </div>
-                            </div>
+                            </form>
                         </div>
-                    </div>
-                <!-- end display messages -->
-                <form class="w-full">
-                    <label for="chat" class="sr-only">Your message</label>
-                    <div class="flex items-center px-3 py-2 rounded-lg bg-gray-50">
-                        <textarea id="chat" rows="1" class="block mx-4 p-2.5 w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500" placeholder="Your message..."></textarea>
-                            <button (click) = "sendComment()" type="submit" class="inline-flex justify-center p-2 text-blue-600 rounded-full cursor-pointer hover:bg-blue-100">
-                            <svg aria-hidden="true" class="w-6 h-6 rotate-90" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"></path></svg>
-                            <span class="sr-only">Send message</span>
-                        </button>
-                    </div>
-                </form>
              </div>
         </div>
     </div>
@@ -142,21 +170,12 @@
             <!-- Modal body -->
             <div class="p-6 space-y-6">
                <form action="">
-                    <div class="flex justify-start">
-                        <div class="w-1/3">
+                    <div class="flex justify-between">
+                        <div class="w-1/2">
                             <label for="username-success" class="block mb-2 text-sm font-medium">Name</label>
                             <input name="name" [(ngModel)]="$documentUpdate.name" type="text" id="name" aria-describedby="helper-text-explanation" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 " placeholder="document name">
                         </div>
-                        <div class="w-1/3 mx-2">
-                            <label for="username-success" class="block mb-2 text-sm font-medium">Type</label>
-                            <select name="type"  [(ngModel)]="$documentUpdate.type" id="type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 " placeholder="">
-                                <option value="pdf">Pdf</option>
-                                <option value="word">Word</option>
-                                <option value="powerpoint">Powerpoint</option>
-                                <option value="other">Other</option>
-                            </select>
-                        </div>
-                        <div class="w-1/3">
+                        <div class="w-1/2 ml-2">
                             <label for="username-success" class="block mb-2 text-sm font-medium">Category</label>
                             <select name="category"  [(ngModel)]="$documentUpdate.category" id="category" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 " placeholder="">
                                 <option value="letter de motivation">Letter de motivation</option>
@@ -244,7 +263,7 @@
 <div id="show-modal" tabindex="-1" class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-modal md:h-full">
     <div class="relative w-full h-full max-w-7xl md:h-auto">
         <!-- Modal content -->
-        <div class="relative bg-white rounded-lg shadow">
+        <div class="relative h-screen bg-white rounded-lg shadow">
             <!-- Modal header -->
             <div class="flex items-center justify-between p-5 border-b rounded-t">
                 <h3 class="text-xl font-medium text-gray-900">
@@ -256,25 +275,8 @@
                 </button>
             </div>
             <!-- Modal body -->
-            <div class="p-6 space-y-6">
-                <p class="text-base leading-relaxed text-gray-500">
-                    With less than a month to go before the European Union enacts new consumer privacy laws for its citizens, companies around the world are updating their terms of service agreements to comply.
-                </p>
-                <p class="text-base leading-relaxed text-gray-500">
-                    The European Union’s General Data Protection Regulation (G.D.P.R.) goes into effect on May 25 and is meant to ensure a common set of data rights in the European Union. It requires organizations to notify users as soon as possible of high-risk data breaches that could personally affect them.
-                </p>
-                <p class="text-base leading-relaxed text-gray-500">
-                    With less than a month to go before the European Union enacts new consumer privacy laws for its citizens, companies around the world are updating their terms of service agreements to comply.
-                </p>
-                <p class="text-base leading-relaxed text-gray-500">
-                    The European Union’s General Data Protection Regulation (G.D.P.R.) goes into effect on May 25 and is meant to ensure a common set of data rights in the European Union. It requires organizations to notify users as soon as possible of high-risk data breaches that could personally affect them.
-                </p>
-                <p class="text-base leading-relaxed text-gray-500">
-                    With less than a month to go before the European Union enacts new consumer privacy laws for its citizens, companies around the world are updating their terms of service agreements to comply.
-                </p>
-                <p class="text-base leading-relaxed text-gray-500">
-                    The European Union’s General Data Protection Regulation (G.D.P.R.) goes into effect on May 25 and is meant to ensure a common set of data rights in the European Union. It requires organizations to notify users as soon as possible of high-risk data breaches that could personally affect them.
-                </p>
+            <div class="p-6 space-y-6 h-full">
+               <iframe class="w-full h-full" [src]="transform('http://localhost:80/cvThequeUploadDocs/'+showFileName)"></iframe>
             </div>
             <!-- Modal footer -->
             <div class="flex justify-end items-center p-6 space-x-2 border-t border-gray-200 rounded-b">
@@ -320,21 +322,11 @@
             <div class="p-6 space-y-6">
                <form action="">
                     <div class="flex justify-start">
-                        <div class="w-1/3">
+                        <div class="w-1/2">
                             <label for="name" class="block mb-2 text-sm font-medium">Name</label>
                             <input [(ngModel)]="document.name" type="text" name="name" id="name" placeholder="document name" aria-describedby="helper-text-explanation" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 ">
                         </div>
-                        <div class="w-1/3 mx-2">
-                            <label for="username-success" class="block mb-2 text-sm font-medium">Type</label>
-                            <select [(ngModel)]="document.type" name="type" id="type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 " placeholder="">
-                                <option disabled selected>Select type Document</option>
-                                <option value="pdf">Pdf</option>
-                                <option value="word">Word</option>
-                                <option value="powerpoint">Powerpoint</option>
-                                <option value="other">Other</option>
-                            </select>
-                        </div>
-                        <div class="w-1/3">
+                        <div class="w-1/2 ml-2">
                             <label for="username-success" class="block mb-2 text-sm font-medium">Category</label>
                             <select [(ngModel)]="document.category" name="category" id="category" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 " placeholder="">
                                 <option disabled selected>Select type Category</option>
@@ -350,7 +342,7 @@
                                 <svg aria-hidden="true" class="w-10 mr-1 mb-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
                                 <p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Click to upload</span> or drag and drop</p>
                             </div> -->
-                            <input (input)="uploadDocument($event)" name="file" id="file" type="file" class="" />
+                            <input (input)="uploadDocument($event)" name="file" id="add-file" type="file" class="" />
                         </label>
                     </div> 
                     <!-- start write description -->

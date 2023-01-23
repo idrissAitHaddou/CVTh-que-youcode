@@ -28,7 +28,10 @@ export class SignInComponent implements OnInit {
       (responce: any) => {
         this.loading = false;
         if(!responce) this.errorMessage = "Login failed"
-        else this.router.navigate(['/']);
+        else {
+          this.router.navigate(['/']);
+          window.location.reload()
+        }
     })
   }
 

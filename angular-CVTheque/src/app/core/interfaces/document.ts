@@ -4,7 +4,7 @@ export class Document {
     description: string = ''
     type: string = ''
     category: string = ''
-    data_file: any = null
+    src: string = ""
     createdAt?: string = ""
 }
 

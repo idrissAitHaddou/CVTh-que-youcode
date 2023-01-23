@@ -20,7 +20,6 @@ public class DocumentDto {
     private String type;
     private String category;
     private String createdAt;
-    private String data_file;
 
     public DocumentDto documentEntityToDto(DocumentEntity document){
         return DocumentDto.builder()
@@ -31,7 +30,6 @@ public class DocumentDto {
                 .type(document.getType())
                 .category(document.getCategory())
                 .createdAt(document.getCreatedAt())
-                .data_file(document.getData_file())
                 .build();
     }
 
@@ -44,7 +42,6 @@ public class DocumentDto {
         documentEntity.setType(document.getType());
         documentEntity.setCategory(document.getCategory());
         documentEntity.setCreatedAt((document.getCreatedAt()));
-        documentEntity.setData_file(document.getData_file());
         return documentEntity;
     }
 
@@ -59,7 +56,6 @@ public class DocumentDto {
                     .type(document.getType())
                     .category(document.getCategory())
                     .createdAt(document.getCreatedAt())
-                    .data_file(document.getData_file())
                     .build();
             documentDtoList.add(documentDto);
         });

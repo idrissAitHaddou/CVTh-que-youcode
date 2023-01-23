@@ -1,5 +1,6 @@
 import { HttpEvent, HttpEventType } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
+import { DomSanitizer } from '@angular/platform-browser';
 import { Alert } from 'src/app/core/interfaces/alert';
 import { Comment, Document } from 'src/app/core/interfaces/document';
 import { AuthService } from 'src/app/core/services/auth.service';
@@ -15,34 +16,54 @@ export class HomeComponent implements OnInit {
   $documentUpdate: Document = new Document()
   _documents: Document[] = []
   document: Document = new Document()
-  fileUpdate: any = null
-  messageAlert: string = ""
+  documentUpdate: any = null
+  uploadAddDocument: any = null
+  uploadUpdateDocument: any = null
   messageErrorModal: string = ""
   alertStyle: Alert = new Alert()
+  messageAlert: string = ""
   color: string = "red"
   progress: number = 0
   progressWidth: string = ""
-  comments: Comment[] = []
-  comment: Comment = new Comment() 
-  constructor(private doucmentService: DocumentService, private authService: AuthService) {
+  comments: any
+  comment: string  = ""
+  idDoc: number = 0
+  dtoogleCommentDoc: boolean = false
+  currentRole: string =""
+  showFileName: string =""
+  constructor(private doucmentService: DocumentService, private authService: AuthService, private sanitizer: DomSanitizer) {   
    }
+
+   transform(url: string): any  {
+    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+  }
 
   ngOnInit(): void {
     this.getAllDocument()
     this.alertStyleCss()
   }
 
-  getAllComment(): void {
-    this.doucmentService.getAllComment().subscribe((responce: any) => {
-      this.comments = responce
-    })
+  sortComment(comments: any): any {
+   return null;
+  }
+
+  getAllComment(idDoc: number): void {
+      this.doucmentService.getAllComment(idDoc).subscribe((responce: any) => {
+        this.comments = responce
+        this.comments.sort(function(a: any,b: any){
+          return new Date(b.created_at) > new Date(a.created_at);
+        });
+      })
   }
 
   sendComment(): void{
-    const comment = "hi how are you"
-    this.doucmentService.createComment(comment).subscribe((responce: string) => {
-        // this.comments.push(responce)
-        console.log(responce)
+    const formData = new FormData();
+    formData.append("comment", new Blob([JSON.stringify(this.comment)],{type: "application/json"}));
+    formData.append("idUser", new Blob([JSON.stringify(this.authService.currentUser.id)],{type: "application/json"}));
+    formData.append("idDoc", new Blob([JSON.stringify(this.idDoc)],{type: "application/json"}));
+    this.doucmentService.createComment(formData).subscribe((responce: any) => {
+      this.comment = ""
+        this.comments.push(responce)
     })
   }
 
@@ -68,20 +89,34 @@ export class HomeComponent implements OnInit {
   }
 
   getAllDocument():void {
-    this.doucmentService.getAllDocuemnts(this.authService.currentUser.id).subscribe((response: any) => {
+    this.currentRole = this.authService.currentUser.role
+    console.log("documents")
+    console.log(this.currentRole)
+    if(this.currentRole == "learner") {
+      this.doucmentService.getAllDocuemntsByLearner(this.authService.currentUser.id).subscribe((response: any) => {
+        this._documents = response
+      })
+      return
+    }
+    this.doucmentService.getAllDocuemnts().subscribe((response: any) => {
       this._documents = response
     })
+    console.log(this._documents)
   }
 
   uploadDocument(event:any):void {
-    const reader = new FileReader();
-    reader.readAsDataURL(event.target.files[0]);
-    reader.onload = (event) => {
-      if (reader.result) {
-        this.document.data_file = reader.result
-      }
-    }
+    this.uploadAddDocument = event.target.files[0]
 }
+
+//   uploadDocument(event:any):void {
+//     const reader = new FileReader();
+//     reader.readAsDataURL(event.target.files[0]);
+//     reader.onload = (event) => {
+//       if (reader.result) {
+//         this.document.data_file = reader.result
+//       }
+//     }
+// }
 
   addDocument():void {
     if(!this.validateForm(this.document, this.authService.currentUser.id)) {
@@ -94,6 +129,7 @@ export class HomeComponent implements OnInit {
     }
     const formData = new FormData();
     formData.append('document', new Blob([JSON.stringify(this.document)],{type: "application/json"}));
+    formData.append('file', this.uploadAddDocument);
     formData.append('idUser', new Blob([JSON.stringify(this.authService.currentUser.id)],{type: "application/json"}));
     this.doucmentService.addDocument(formData).subscribe((event: HttpEvent<any>) => {
      switch(event.type) {
@@ -125,14 +161,7 @@ export class HomeComponent implements OnInit {
   }
 
   updateUploadDocument(event:any):void {
-    const reader = new FileReader();
-    reader.readAsDataURL(event.target.files[0]);
-    reader.onload = (event) => {
-      if (reader.result) {
-        this.$documentUpdate.data_file = reader.result
-        console.log(this.document.data_file)
-      }
-    }
+    this.uploadUpdateDocument = event.target.files[0]
 }
 
   alertStyleCss():void {
@@ -143,12 +172,12 @@ export class HomeComponent implements OnInit {
   }
 
   validateForm(document: Document, idUser: number): boolean {
-      if(document.name == "" || document.type == "" || document.category == "" || document.description == "" || document.data_file == null || idUser == null)  return false
+      if(document.name == "" || document.category == "" || document.description == "" || this.uploadAddDocument == null || idUser == null)  return false
       else return true
   }
 
   validateUpdateForm(document: Document): boolean {
-    if(document.name == "" || document.type == "" || document.category == "" || document.description == "")  return false
+    if(document.name == "" || document.category == "" || document.description == "")  return false
     else return true
 }
 
@@ -170,8 +199,8 @@ export class HomeComponent implements OnInit {
 
       const formData = new FormData();
       formData.append('document', new Blob([JSON.stringify(this.$documentUpdate)],{type: "application/json"}));
+      formData.append('file', this.uploadUpdateDocument);
       formData.append('id', new Blob([JSON.stringify(id)],{type: "application/json"}));
-
       this.doucmentService.updateDocument(formData).subscribe((event: HttpEvent<any>) => {
         switch(event.type) {
           case HttpEventType.UploadProgress:
@@ -195,6 +224,11 @@ export class HomeComponent implements OnInit {
             }
       })
 
+  }
+
+  showFileDetails(fileName: string) {
+      this.showFileName = fileName;
+      console.log(this.showFileName)
   }
 
 }

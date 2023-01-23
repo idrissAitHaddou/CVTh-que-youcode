@@ -3,6 +3,7 @@ package com.example.cvtheque.promotion;
 import com.example.cvtheque.cme.CmeEntity;
 import com.example.cvtheque.former.FormerEntity;
 import com.example.cvtheque.learner.LearnerEntity;
+import com.example.cvtheque.users.UserEntity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
@@ -35,4 +36,7 @@ public class PromotionEntity implements Serializable {
     @ManyToMany(mappedBy = "promotions",cascade = CascadeType.ALL)
     @JsonIgnore
     private List<LearnerEntity> learners = new ArrayList<>();
+    @ManyToMany(mappedBy = "promotions",cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<UserEntity> users = new ArrayList<>();
 }

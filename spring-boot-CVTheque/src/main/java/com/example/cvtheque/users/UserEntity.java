@@ -1,7 +1,13 @@
 package com.example.cvtheque.users;
 
+import com.example.cvtheque.document.CommentDocsEntity;
+import com.example.cvtheque.document.DocumentEntity;
+import com.example.cvtheque.promotion.PromotionEntity;
 import jakarta.persistence.*;
 import lombok.Data;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity(name = "User")
 @Table(name = "users")
@@ -20,4 +26,8 @@ public class UserEntity {
     private String password;
     private String image;
     private String role;
+    @ManyToMany(targetEntity = PromotionEntity.class,fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private List<PromotionEntity> promotions = new ArrayList<>();
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private List<DocumentEntity> documents = new ArrayList<>();
 }
